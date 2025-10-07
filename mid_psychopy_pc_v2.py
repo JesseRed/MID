@@ -6,17 +6,17 @@ PC-only Monetary Incentive Delay (MID) task implemented in PsychoPy.
 - Adaptive target duration per condition (~66–70% hits via 1-up/2-down rule).
 - Clean CSV logging.
 - Simple points "payout" logic.
+- ESC abort anywhere (clean shutdown).
 
 Run:
     pip install psychopy
-    python mid_psychopy_pc.py
+    python mid_psychopy_pc_v2.py
 
 Author: ChatGPT (for Bro)
 """
 
-from psychopy import visual, core, event, gui, data
-# from psychopy.hardware import keyboard
-import csv, random, os, sys
+from psychopy import visual, core, event, gui
+import csv, random, os
 from datetime import datetime
 
 # ------------------------
@@ -116,9 +116,12 @@ exp_info = {
     "participant": "",
     "session": "001"
 }
-dlg = gui.DlgFromDict(exp_info, title="MID Task (PC)")
-if not dlg.OK:
-    core.quit()
+try:
+    dlg = gui.DlgFromDict(exp_info, title="MID Task (PC)")
+    if not dlg.OK:
+        core.quit()
+except Exception:
+    print("GUI unavailable – using defaults:", exp_info)
 
 # ------------------------
 # Output paths
@@ -129,7 +132,7 @@ os.makedirs(out_dir, exist_ok=True)
 csv_path = os.path.join(out_dir, base_name + ".csv")
 
 # ------------------------
-# Window and stimuli
+# Window and stimuli (WSL-friendly)
 # ------------------------
 win = visual.Window(
     size=CONFIG["win_size"],
@@ -137,13 +140,11 @@ win = visual.Window(
     color=CONFIG["screen_color"],
     units="height",
     allowGUI=False,
-    waitBlanking=False,   # verhindert Blockieren beim Frame-Sync
-    checkTiming=False,    # überspringt "Attempting to measure the frame rate"
-    useFBO=False,         # reduziert GL-Komplexität unter WSL
+    waitBlanking=False,   # prevents blocking on frame-sync under WSL
+    checkTiming=False,    # skip frame rate measurement
+    useFBO=False,         # reduce GL complexity under WSL
     autoLog=False
 )
-
-# kb = keyboard.Keyboard()
 
 fixation = visual.TextStim(
     win, text="+", color=CONFIG["fixation_color"], height=CONFIG["text_font_height"], font=CONFIG["font"]
@@ -193,21 +194,31 @@ writer = csv.writer(csv_file)
 writer.writerow(csv_headers)
 
 # ------------------------
-# Instruction screen
+# Abort helper
 # ------------------------
-instr.draw()
-win.flip()
-event.waitKeys()
-
-
 def check_escape():
     """Check if ESC was pressed; cleanly abort if so."""
     if 'escape' in event.getKeys():
         print("Abbruch durch Benutzer (ESC) – speichere Daten und beende...")
-        csv_file.flush()
-        csv_file.close()
-        win.close()
+        try:
+            csv_file.flush()
+            csv_file.close()
+        except Exception:
+            pass
+        try:
+            win.close()
+        except Exception:
+            pass
         core.quit()
+
+# ------------------------
+# Instruction screen
+# ------------------------
+instr.draw()
+win.flip()
+keys = event.waitKeys()
+if 'escape' in keys:
+    check_escape()
 
 # ------------------------
 # Optional practice
@@ -223,30 +234,32 @@ def run_trial(trial_idx, block_idx, cond_label):
     fixation.draw()
     win.flip()
     core.wait(iti)
-    check_escape()  
+    check_escape()
 
     # Cue
     cue_stim.text = cond_symbol[cond_label]
     cue_stim.draw()
     win.flip()
     core.wait(CONFIG["cue_dur_s"])
+    check_escape()
 
     # Anticipation
     fixation.draw()
     win.flip()
     core.wait(CONFIG["anticipation_s"])
-    check_escape()  
-    
+    check_escape()
+
+    # Target + response window
     event.clearEvents()
     rt = None
     keyname = None
     target_stim.draw()
     win.flip()
-    clock = core.Clock()  # startet bei flip≈0
-    # Polling für target-Fenster
+    clock = core.Clock()  # starts ~at target onset
     target_sec = target_ms / 1000.0
     while clock.getTime() < target_sec:
-        keys = event.getKeys(keyList=CONFIG["resp_keys"]+['escape'], timeStamped=clock)
+        check_escape()
+        keys = event.getKeys(keyList=CONFIG["resp_keys"], timeStamped=clock)
         if keys:
             keyname, rt_sec = keys[0]
             rt = rt_sec * 1000.0
@@ -256,14 +269,9 @@ def run_trial(trial_idx, block_idx, cond_label):
     # Target off
     fixation.draw()
     win.flip()
-    
-    
-    
-    # Hit = any keypress within the visibility window (strict MID)
-    # Here we allow "late" key within a 50 ms grace period if desired; currently: no grace.
-    hit = False
-    if rt is not None and rt <= target_ms:
-        hit = True
+
+    # Hit criterion: key within the visibility window (no grace)
+    hit = (rt is not None and rt <= target_ms)
 
     # Feedback and staircase
     delta_points = meta["points_hit"] if hit else meta["points_miss"]
@@ -284,6 +292,7 @@ def run_trial(trial_idx, block_idx, cond_label):
     feedback_text.draw()
     win.flip()
     core.wait(CONFIG["feedback_dur_s"])
+    check_escape()
 
     # Log
     writer.writerow([
@@ -299,7 +308,7 @@ if CONFIG["practice_trials"] > 0:
         run_trial(ti, block_idx=0, cond_label=cond)
     txt = visual.TextStim(win, text="Ende Übung.\nDrücken Sie eine Taste für den Start.", color=CONFIG["text_color"], height=CONFIG["text_font_height"], font=CONFIG["font"])
     txt.draw(); win.flip(); 
-    keys = event.waitKeys(keyList=CONFIG["resp_keys"] + ['escape'])
+    keys = event.waitKeys()
     if 'escape' in keys:
         check_escape()
 
@@ -310,10 +319,10 @@ for b in range(1, CONFIG["n_blocks"]+1):
     # Block intro
     blk = visual.TextStim(win, text=f"Block {b} von {CONFIG['n_blocks']}\n\nDrücken Sie eine Taste, um zu starten.", color=CONFIG["text_color"], height=CONFIG["text_font_height"], font=CONFIG["font"])
     blk.draw(); win.flip(); 
-    keys = event.waitKeys(keyList=CONFIG["resp_keys"] + ['escape'])
+    keys = event.waitKeys()
     if 'escape' in keys:
         check_escape()
-    
+
     trials = make_trials(CONFIG["conditions"], CONFIG["trials_per_block"])
     for ti, cond in enumerate(trials, start=1):
         run_trial(ti, block_idx=b, cond_label=cond)
@@ -328,6 +337,10 @@ end_text.draw(); win.flip()
 core.wait(2.0)
 
 # Cleanup
-csv_file.close()
+try:
+    csv_file.flush()
+    csv_file.close()
+except Exception:
+    pass
 win.close()
 core.quit()

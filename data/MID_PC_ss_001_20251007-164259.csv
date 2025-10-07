@@ -1,0 +1,2 @@
+participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
+ss,001,20251007-164323,1,1,NEUTRAL,0,0,250,250,,0,882,1176,2851,250,500,0,0,,global,

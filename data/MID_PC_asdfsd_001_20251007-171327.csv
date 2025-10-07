@@ -1,0 +1,5 @@
+participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
+asdfsd,001,20251007-171341,1,1,WIN_LOW,1,1,250,250,,0,903,1036,2839,250,500,0,0,,global,
+asdfsd,001,20251007-171347,1,2,NEUTRAL,0,0,250,250,,0,786,1137,2575,250,500,0,0,,global,0.0
+asdfsd,001,20251007-171353,1,3,AVOID_LOW,-1,1,250,250,,0,980,825,2057,250,500,-10,-10,,global,0.0
+asdfsd,001,20251007-171358,1,4,WIN_LOW,1,1,260,260,,0,1111,849,2047,250,500,0,-10,,global,0.0

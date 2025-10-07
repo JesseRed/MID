@@ -1,0 +1,71 @@
+# MID configuration (YAML)
+# Bro: Du kannst hier fast alles steuern, ohne Code zu ändern.
+
+win:
+  size: [1280, 720]
+  fullscr: false
+  screen_color: "black"
+  text_color: "white"
+  fixation_color: "white"
+  font: "Arial"
+  waitBlanking: false
+  checkTiming: false
+  useFBO: false
+
+# Explicit timing spec (all in milliseconds)
+timings:
+  cue_ms: 250
+  pause1_ms_range: [750, 1250]   # Pause 1 (vor Cue)
+  pause2_ms_range: [800, 1200]   # Antizipation
+  pause3_ms_range: [2000, 3000]  # nach Feedback
+  feedback_ms: 500
+
+staircase:
+  initial_ms: 250
+  min_ms: 120
+  max_ms: 900          # global cap; set to 800 if you like stricter cap
+  step_ms: 10          # Schritt für die Stufenregelung setze 0 für konstant
+  per_condition_max_ms: {}   # e.g., {"NEUTRAL": 800}
+
+# R-Score rule: if recent hit-rate (%) > threshold, scale target duration
+rscore:
+  enabled: true
+  window: 20            # last N trials
+  threshold: 75.0       # percent
+  scale: 0.9            # multiply target duration by this
+  scope: "global"       # "global" or "per_condition"
+
+task:
+  n_blocks: 2
+  trials_per_block: 36
+  resp_keys: ["space"]
+  show_cumulative_points: true
+  practice_trials: 0
+
+visuals:
+  # Image paths (relative to script directory)
+  target_image: "images/Target.png"
+  cue_images: 
+    "0": "images/Cue00.png"    # neutral (magnitude 0)
+    "1": "images/Cue03.png"    # low magnitude (magnitude 1)
+    "5": "images/Cue30.png"    # high magnitude (magnitude 5)
+  monetary_feedback_images:
+    "0": "images/MonetaryFeedbackPositiv00.png"  # neutral
+    "1": "images/MonetaryFeedbackPositiv03.png"  # low magnitude
+    "5": "images/MonetaryFeedbackPositiv30.png"  # high magnitude
+  performance_feedback_images:
+    "hit": "images/PerformanceFeedbackPositiv.png"
+    "miss": "images/PerformanceFeedbackNegativ.png"
+  # Font settings (still used for text instructions)
+  text_font_height: 0.06
+
+points:
+  start: 0
+
+# Conditions: [label, valence, magnitude, points_on_hit, points_on_miss]
+conditions:
+  - ["WIN_LOW",    1, 1,  10,  0]
+  - ["WIN_HIGH",   1, 5,  50,  0]
+  - ["AVOID_LOW", -1, 1,   0, -10]
+  - ["AVOID_HIGH",-1, 5,   0, -50]
+  - ["NEUTRAL",    0, 0,   0,   0]

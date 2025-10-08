@@ -27,6 +27,16 @@ from psychopy import visual, core, event, gui
 from config_loader import load_config
 from utils import timestamp, uniform_jitter, StaircaseAdaptive
 
+import sys, os
+
+def app_root():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+ROOT = app_root()
+os.chdir(ROOT)
+
 # ------------------------
 # Main
 # ------------------------

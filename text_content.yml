@@ -1,0 +1,42 @@
+# MID Task Text Content
+# Edit this file to change all text displayed to participants
+
+# Title and main heading
+title: "M I D"
+subtitle: "Monetary Incentive Delay Task"
+
+# Start screen text
+start_instruction: "Drücken Sie eine beliebige Taste, um fortzufahren."
+
+# Main task instructions
+task_instructions: |
+  Aufgabe:
+
+  Fixieren Sie die Mitte des Bildschirms.
+  Ein Symbol kündigt an, ob Sie einen grossen Gewinn erzielen können, 
+  einen kleinen Gewinn erzielen können oder nichts gewinnen können können.
+  Wenn das Zielsymbol erscheint, drücken Sie so schnell wie möglich die Leertaste.
+  Je schneller Sie reagieren, desto mehr Geld können Sie gewinnen.
+
+  Drücken Sie eine Taste, um zu starten.
+
+# Practice session text
+practice_end: |
+  Ende Übung.
+  Drücken Sie eine Taste für den Start.
+
+# Block start text
+block_start: |
+  Block {block_num} von {total_blocks}
+
+  Drücken Sie eine Taste, um zu starten.
+
+# End screen text
+experiment_end: |
+  Geschafft!
+  Punkte gesamt: {total_points}
+
+  Vielen Dank.
+
+# Error messages
+escape_message: "Abbruch durch Benutzer (ESC) – speichere Daten und beende..."

@@ -24,108 +24,8 @@ from datetime import datetime
 import yaml
 from psychopy import visual, core, event, gui
 
-# ------------------------
-# Helpers
-# ------------------------
-
-def timestamp():
-    return datetime.now().strftime("%Y%m%d-%H%M%S")
-
-def uniform_jitter(lo, hi):
-    return random.uniform(lo, hi)
-
-class StaircaseAdaptive:
-    """Simple 1-up/2-down staircase to ~70%."""
-    def __init__(self, initial_ms, min_ms, max_ms, step_ms):
-        self.value = initial_ms
-        self.min_ms = min_ms
-        self.max_ms = max_ms
-        self.step = step_ms
-        self._consecutive_hits = 0
-
-    def update(self, hit):
-        if hit:
-            self._consecutive_hits += 1
-            if self._consecutive_hits >= 2:
-                self.value = max(self.min_ms, self.value - self.step)
-                self._consecutive_hits = 0
-        else:
-            self.value = min(self.max_ms, self.value + self.step)
-            self._consecutive_hits = 0
-
-    def get_ms(self):
-        return self.value
-
-# ------------------------
-# Load config
-# ------------------------
-
-def load_config(path):
-    with open(path, 'r', encoding='utf-8') as f:
-        cfg = yaml.safe_load(f)
-
-    # sensible defaults if missing
-    cfg.setdefault('win', {})
-    cfg['win'].setdefault('size', [1280, 720])
-    cfg['win'].setdefault('fullscr', False)
-    cfg['win'].setdefault('screen_color', 'black')
-    cfg['win'].setdefault('text_color', 'white')
-    cfg['win'].setdefault('fixation_color', 'white')
-    cfg['win'].setdefault('font', 'Arial')
-    cfg['win'].setdefault('useFBO', False)
-    cfg['win'].setdefault('waitBlanking', False)
-    cfg['win'].setdefault('checkTiming', False)
-
-    cfg.setdefault('timings', {})
-    # explicit timing spec from user
-    cfg['timings'].setdefault('cue_ms', 250)
-    cfg['timings'].setdefault('pause1_ms_range', [750, 1250])
-    cfg['timings'].setdefault('pause2_ms_range', [800, 1200])
-    cfg['timings'].setdefault('pause3_ms_range', [2000, 3000])
-    cfg['timings'].setdefault('feedback_ms', 500)
-
-    cfg.setdefault('staircase', {})
-    cfg['staircase'].setdefault('initial_ms', 250)
-    cfg['staircase'].setdefault('min_ms', 120)
-    cfg['staircase'].setdefault('max_ms', 900)  # user mentioned 800/900 -> default 900
-    cfg['staircase'].setdefault('step_ms', 10)
-    # optional per-condition max override
-    cfg['staircase'].setdefault('per_condition_max_ms', {})  # e.g., {"NEUTRAL": 800}
-
-    cfg.setdefault('rscore', {})
-    cfg['rscore'].setdefault('enabled', True)
-    cfg['rscore'].setdefault('window', 20)       # last N trials (global) to compute %
-    cfg['rscore'].setdefault('threshold', 75.0)  # percent
-    cfg['rscore'].setdefault('scale', 0.9)       # multiply target_ms by this if above threshold
-    cfg['rscore'].setdefault('scope', 'global')  # "global" or "per_condition"
-
-    cfg.setdefault('task', {})
-    cfg['task'].setdefault('n_blocks', 2)
-    cfg['task'].setdefault('trials_per_block', 36)
-    cfg['task'].setdefault('resp_keys', ['space'])
-    cfg['task'].setdefault('show_cumulative_points', True)
-    cfg['task'].setdefault('practice_trials', 0)
-
-    cfg.setdefault('visuals', {})
-    cfg['visuals'].setdefault('target_image', 'images/Target.png')
-    cfg['visuals'].setdefault('cue_images', {"0": "images/Cue00.png", "1": "images/Cue03.png", "5": "images/Cue30.png"})
-    cfg['visuals'].setdefault('monetary_feedback_images', {"0": "images/MonetaryFeedbackPositiv00.png", "1": "images/MonetaryFeedbackPositiv03.png", "5": "images/MonetaryFeedbackPositiv30.png"})
-    cfg['visuals'].setdefault('performance_feedback_images', {"hit": "images/PerformanceFeedbackPositiv.png", "miss": "images/PerformanceFeedbackNegativ.png"})
-    cfg['visuals'].setdefault('text_font_height', 0.05)
-
-    cfg.setdefault('points', {})
-    cfg['points'].setdefault('start', 0)
-
-    # conditions list: [ [label, valence, magnitude, points_on_hit, points_on_miss], ... ]
-    if 'conditions' not in cfg or not cfg['conditions']:
-        cfg['conditions'] = [
-            ['WIN_LOW', +1, 1, +10, 0],
-            ['WIN_HIGH', +1, 5, +50, 0],
-            ['AVOID_LOW', -1, 1, 0, -10],
-            ['AVOID_HIGH', -1, 5, 0, -50],
-            ['NEUTRAL', 0, 0, 0, 0],
-        ]
-    return cfg
+from config_loader import load_config
+from utils import timestamp, uniform_jitter, StaircaseAdaptive
 
 # ------------------------
 # Main
@@ -274,7 +174,7 @@ def main():
 
     def check_escape():
         if 'escape' in event.getKeys():
-            print("Abbruch durch Benutzer (ESC) – speichere Daten und beende...")
+            print(cfg['text']['escape_message'])
             try:
                 csv_file.flush(); csv_file.close()
             except Exception:
@@ -304,7 +204,7 @@ def main():
     # 1️⃣ Startscreen (Title)
     start_text = visual.TextStim(
         win,
-        text="M I D\n\nMonetary Incentive Delay Task",
+        text=cfg['text']['title'],
         color=cfg['win']['text_color'],
         height=0.15,
         font=cfg['win']['font'],
@@ -312,16 +212,25 @@ def main():
     )
     start_sub = visual.TextStim(
         win,
-        text="Drücken Sie eine beliebige Taste, um fortzufahren.",
+        text=cfg['text']['subtitle'],
+        color=cfg['win']['text_color'],
+        height=cfg['visuals']['text_font_height'],
+        font=cfg['win']['font'],
+        pos=(0, -0.1)
+    )
+    start_instruction = visual.TextStim(
+        win,
+        text=cfg['text']['start_instruction'],
         color=cfg['win']['text_color'],
         height=cfg['visuals']['text_font_height'],
         font=cfg['win']['font'],
         pos=(0, -0.25)
     )
 
-    # draw both and show for at least a moment
+    # draw all start screen elements
     start_text.draw()
     start_sub.draw()
+    start_instruction.draw()
     win.flip()
     core.wait(0.8)  # ensures frame appears before waiting
     event.clearEvents()
@@ -332,15 +241,7 @@ def main():
     # 2️⃣ Kurzanleitung
     instruction_text = visual.TextStim(
         win,
-        text=(
-            "Aufgabe:\n\n"
-            "Fixieren Sie die Mitte des Bildschirms.\n"
-            "Ein Symbol kündigt an, ob Sie einen gossen Gewinn (+) erzielen können, \n"
-            "einen kleinen Gewinn erzielen können (o) oder nichts gewinnen könnne (-) können.\n"
-            "Wenn der Zielkreis erscheint, drücken Sie so schnell wie möglich die Leertaste.\n"
-            "Je schneller Sie reagieren, desto mehr Geld können Sie gewinnen.\n\n"
-            "Drücken Sie eine Taste, um zu starten."
-        ),
+        text=cfg['text']['task_instructions'],
         color=cfg['win']['text_color'],
         height=cfg['visuals']['text_font_height'],
         wrapWidth=1.2,
@@ -422,13 +323,20 @@ def main():
         target_stim.draw(); win.flip()
         clock = core.Clock()
         tgt_sec = target_ms / 1000.0
+        
         while clock.getTime() < tgt_sec:
             check_escape()
-            keys = event.getKeys(keyList=cfg['task']['resp_keys'], timeStamped=clock)
+            # Check for key press
+            keys = event.getKeys(timeStamped=clock)
             if keys:
-                keyname, rt_sec = keys[0]
-                rt = int(rt_sec * 1000.0)
-                break
+                for key, timestamp in keys:
+                    keyname = key
+                    rt_sec = timestamp
+                    if keyname in cfg['task']['resp_keys'] or keyname == 'space':
+                        rt = int(rt_sec * 1000.0)
+                        break
+                if rt is not None:
+                    break
             core.wait(0.001)
 
         # Target off
@@ -442,12 +350,18 @@ def main():
         points_total += delta_points
         stair.update(hit)
 
-        # Show monetary feedback image
-        monetary_feedback_images[cond_label].draw(); win.flip(); core.wait(fb_ms / 1000.0); check_escape()
-        
-        # Show performance feedback image
+        # Show performance feedback image first
         perf_key = "hit" if hit else "miss"
         performance_feedback_images[perf_key].draw(); win.flip(); core.wait(fb_ms / 1000.0); check_escape()
+        
+        # Show monetary feedback image second
+        # If miss (negative performance), always show 0 points feedback regardless of condition
+        if not hit:
+            # Use the neutral (0 points) monetary feedback image for misses
+            monetary_feedback_images["NEUTRAL"].draw(); win.flip(); core.wait(fb_ms / 1000.0); check_escape()
+        else:
+            # Show condition-specific monetary feedback for hits
+            monetary_feedback_images[cond_label].draw(); win.flip(); core.wait(fb_ms / 1000.0); check_escape()
 
         # Pause3 (post-feedback)
         fixation.draw(); win.flip(); core.wait(pause3_ms / 1000.0); check_escape()
@@ -480,7 +394,7 @@ def main():
         random.shuffle(prac_trials)
         for ti, cond in enumerate(prac_trials, start=1):
             run_trial(ti, block_idx=0, cond_label=cond)
-        txt = visual.TextStim(win, text="Ende Übung.\nDrücken Sie eine Taste für den Start.",
+        txt = visual.TextStim(win, text=cfg['text']['practice_end'],
                               color=cfg['win']['text_color'], height=cfg['visuals']['text_font_height'], font=cfg['win']['font'])
         txt.draw(); win.flip()
         keys = event.waitKeys(keyList=cfg['task']['resp_keys'] + ['escape'])
@@ -489,7 +403,7 @@ def main():
 
     # Main blocks
     for b in range(1, cfg['task']['n_blocks'] + 1):
-        blk = visual.TextStim(win, text=f"Block {b} von {cfg['task']['n_blocks']}\n\nDrücken Sie eine Taste, um zu starten.",
+        blk = visual.TextStim(win, text=cfg['text']['block_start'].format(block_num=b, total_blocks=cfg['task']['n_blocks']),
                               color=cfg['win']['text_color'], height=cfg['visuals']['text_font_height'], font=cfg['win']['font'])
         blk.draw(); win.flip()
         keys = event.waitKeys(keyList=cfg['task']['resp_keys'] + ['escape'])
@@ -510,7 +424,7 @@ def main():
             run_trial(ti, block_idx=b, cond_label=cond)
 
     # Goodbye
-    end_text = visual.TextStim(win, text=f"Geschafft!\nPunkte gesamt: {points_total}\n\nVielen Dank.",
+    end_text = visual.TextStim(win, text=cfg['text']['experiment_end'].format(total_points=points_total),
                                color=cfg['win']['text_color'], height=cfg['visuals']['text_font_height'], font=cfg['win']['font'])
     end_text.draw(); win.flip(); core.wait(2.0)
 

@@ -1,0 +1,5 @@
+participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
+dfgs,001,20251008-122651,1,1,WIN_HIGH,1,5,500,500,,0,878,1086,2261,250,1000,0,0,,global,
+dfgs,001,20251008-122659,1,2,WIN_HIGH,1,5,510,510,,0,1229,1170,2997,250,1000,0,0,,global,0.0
+dfgs,001,20251008-122707,1,3,AVOID_LOW,-1,1,500,500,,0,1232,993,2773,250,1000,-10,-10,,global,0.0
+dfgs,001,20251008-122714,1,4,WIN_HIGH,1,5,520,520,,0,1203,942,2078,250,1000,0,-10,,global,0.0

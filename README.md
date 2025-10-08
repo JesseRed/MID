@@ -1,7 +1,10 @@
-# Monetary Incentive Delay (MID) Task — PsychoPy (YAML Version)
+# Monetary Incentive Delay (MID) Task — PsychoPy & PsychoJS
 
-This repository contains a **PC-only implementation of the Monetary Incentive Delay (MID) task** written in [PsychoPy](https://www.psychopy.org/).  
-It is designed for **behavioral use** (no MRI/EEG/MEG integration) and supports **parameter control via YAML configuration**.
+This repository contains **two implementations** of the Monetary Incentive Delay (MID) task:
+- **Python/PsychoPy** version for local computer use (high timing precision)
+- **JavaScript/PsychoJS** version for web browser use (online or offline)
+
+Both versions are designed for **behavioral use** (no MRI/EEG/MEG integration) and share the same **YAML configuration files**.
 
 ---
 
@@ -26,36 +29,71 @@ This version is:
 ```
 MID/
 │
-├── mid_psychopy_pc_yaml.py     # main PsychoPy task script (YAML-driven)
-├── mid_config.yml              # all parameters (timing, points, staircase, visuals)
-└── data/                       # automatically created folder for CSV log files
+├── Python/PsychoPy Version:
+│   ├── mid_psychopy_pc_yaml.py     # main Python experiment script
+│   ├── config_loader.py            # configuration validation
+│   └── utils.py                    # helper functions
+│
+├── JavaScript/PsychoJS Version:
+│   ├── mid_psychojs.html           # main HTML file (open in browser)
+│   ├── mid_psychojs.js             # JavaScript experiment code
+│   ├── mid_psychojs.css            # web interface styling
+│   └── README_PsychoJS.md          # PsychoJS-specific documentation
+│
+├── Shared Configuration:
+│   ├── mid_config.yml              # experiment parameters (both versions)
+│   ├── text_content.yml            # German text content (both versions)
+│   └── images/                     # all stimulus images (both versions)
+│
+└── data/                           # CSV log files (Python version)
 ```
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation & Usage
 
-### 1️⃣ Clone the repository
+### 🐍 Python/PsychoPy Version
+
+#### 1️⃣ Clone the repository
 ```bash
 git clone https://github.com/JesseRed/MID.git
 cd MID
 ```
 
-### 2️⃣ Create a conda environment
+#### 2️⃣ Create a conda environment
 ```bash
 conda create -n mid_env python=3.10
 conda activate mid_env
 ```
 
-### 3️⃣ Install dependencies
+#### 3️⃣ Install dependencies
 ```bash
 conda install -c conda-forge psychopy pyyaml
 ```
 
-### 4️⃣ Run the task
+#### 4️⃣ Run the task
 ```bash
 python mid_psychopy_pc_yaml.py --config mid_config.yml
 ```
+
+### 🌐 JavaScript/PsychoJS Version
+
+#### Option 1: Local (Offline)
+```bash
+# Simply open the HTML file in your browser
+open mid_psychojs.html
+
+# Or use a local server (recommended)
+python -m http.server 8000
+# Then open: http://localhost:8000/mid_psychojs.html
+```
+
+#### Option 2: Online (Pavlovia)
+1. Upload all files to [Pavlovia.org](https://pavlovia.org/)
+2. Set project to "RUNNING"
+3. Share experiment URL with participants
+
+**See [README_PsychoJS.md](README_PsychoJS.md) for detailed PsychoJS documentation.**
 
 ---
 
@@ -259,37 +297,67 @@ Each run produces one CSV file in the `data/` folder:
 
 ## 🧰 Developer Notes
 
-### Run with debug prints
+### Python Version
 ```bash
+# Run with debug prints
 python -u mid_psychopy_pc_yaml.py --config mid_config.yml
-```
 
-### Change config file dynamically
-```bash
+# Change config file dynamically
 python mid_psychopy_pc_yaml.py --config configs/mid_config_alt.yml
-```
 
-### Disable staircase (fixed target)
-```yaml
+# Disable staircase (fixed target)
+# Edit mid_config.yml:
 staircase:
   step_ms: 0
   initial_ms: 300
 ```
 
+### PsychoJS Version
+```bash
+# Test locally with server
+python -m http.server 8000
+
+# Deploy to Pavlovia
+# Upload files via Git or Pavlovia interface
+# Ensure all resources (images, YAML) are included
+```
+
+---
+
+## 🔄 Version Comparison
+
+| Feature | Python/PsychoPy | JavaScript/PsychoJS |
+|---------|----------------|---------------------|
+| **Platform** | Local computer | Web browser |
+| **Installation** | Python + PsychoPy required | No installation needed |
+| **Timing Precision** | Very high (< 1ms) | Good (~10ms) |
+| **Offline Use** | ✅ Yes | ✅ Yes |
+| **Online Use** | ❌ No | ✅ Yes (Pavlovia) |
+| **Data Storage** | Local CSV file | Download CSV |
+| **Configuration** | mid_config.yml | mid_config.yml (same) |
+| **Text Content** | text_content.yml | text_content.yml (same) |
+| **Images** | images/ folder | images/ folder (same) |
+| **Key Detection** | Excellent | Good |
+| **Frame Rate** | 60+ FPS guaranteed | Browser-dependent |
+| **Best For** | Lab computers, precise timing | Online studies, remote testing |
+
 ---
 
 ## 🧩 Possible Extensions
 
-- Add separate **practice.yaml** for short demo runs.  
-- Include **response feedback sounds**.  
-- Log **trial-wise R-Score evolution**.  
-- Export performance summary at the end.  
-- Visualize CSV data in a Jupyter notebook.
+- Add separate **practice.yaml** for short demo runs  
+- Include **response feedback sounds**  
+- Log **trial-wise R-Score evolution**  
+- Export performance summary at the end  
+- Visualize CSV data in a Jupyter notebook  
+- Add **mobile support** for PsychoJS version  
+- Implement **multi-language support** beyond German
 
 ---
 
 ## 👤 Author
 
 Developed by **Prof. Dr. Carsten M. Klingner** (Jena University Hospital)  
-Structured with ChatGPT (GPT-5).  
-Version: `v2.1-YAML` — 2025-10-07
+Python version: 2025-10-07  
+PsychoJS version: 2025-10-08  
+Structured with ChatGPT (GPT-4.5)

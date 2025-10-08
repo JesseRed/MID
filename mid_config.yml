@@ -15,9 +15,9 @@ win:
 # Explicit timing spec (all in milliseconds)
 timings:
   cue_ms: 250
-  pause1_ms_range: [750, 1250]   # Pause 1 (vor Cue)
+  pause1_ms_range: [750, 1250]   # Pause 1 (vor Target)
   pause2_ms_range: [800, 1200]   # Antizipation
-  pause3_ms_range: [2000, 3000]  # nach Feedback
+  pause3_ms_range: [1500, 2000]  # nach Feedback
   feedback_ms: 1000
 
 staircase:
@@ -50,9 +50,12 @@ visuals:
     "1": "images/Taler3.png"    # low magnitude (magnitude 1)
     "5": "images/Taler12.png"    # high magnitude (magnitude 5)
   monetary_feedback_images:
-    "0": "images/MonetaryFeedbackPositiv00.png"  # neutral
-    "1": "images/MonetaryFeedbackPositiv03.png"  # low magnitude
-    "5": "images/MonetaryFeedbackPositiv30.png"  # high magnitude
+    # "0": "images/MonetaryFeedbackPositiv00.png"  # neutral
+    # "1": "images/MonetaryFeedbackPositiv03.png"  # low magnitude
+    # "5": "images/MonetaryFeedbackPositiv30.png"  # high magnitude
+    "0": "images/schatztruhebw.png"  # neutral
+    "1": "images/schatztruhebw.png"  # low magnitude
+    "5": "images/schatztruhebw.png"  # high magnitude
   performance_feedback_images:
     "hit": "images/PerformanceFeedbackPositiv.png"
     "miss": "images/PerformanceFeedbackNegativ.png"
@@ -64,6 +67,6 @@ points:
 
 # Conditions: [label, valence, magnitude, points_on_hit, points_on_miss]
 conditions:
-  - ["WIN_LOW",    1, 1,  6,  0]
-  - ["WIN_HIGH",   1, 5,  60,  0]
+  - ["WIN_LOW",    1, 1,  3,  0]
+  - ["WIN_HIGH",   1, 5,  30,  0]
   - ["NEUTRAL",    0, 0,   0,   0]

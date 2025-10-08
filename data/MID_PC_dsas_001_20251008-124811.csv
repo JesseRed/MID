@@ -1,3 +1,0 @@
-participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
-dsas,001,20251008-124821,1,1,WIN_LOW,1,1,500,500,488,1,1037,903,2244,250,1000,6,6,space,global,
-dsas,001,20251008-124828,1,2,NEUTRAL,0,0,500,450,,0,1003,910,2203,250,1000,0,6,,global,100.0

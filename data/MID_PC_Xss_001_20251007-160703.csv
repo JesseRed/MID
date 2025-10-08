@@ -1,2 +1,0 @@
-participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms,rt_ms,hit,iti_s,anticipation_s,points_change,points_total,key_pressed
-Xss,001,20251007-160724,1,1,AVOID_LOW,-1,1,250,,0,1.806,2.0,-10,-10,

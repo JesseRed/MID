@@ -145,14 +145,85 @@ conditions:
 
 ## 🧠 Trial Timeline
 
-| Phase | Duration / Range | Description |
-|-------|------------------|--------------|
-| Pause 1 | 750–1250 ms | Fixation before cue |
-| Cue | 250 ms | Symbol announces reward/loss condition |
-| Pause 2 | 800–1200 ms | Anticipation interval |
-| Target | adaptive (~120–900 ms) | Respond fast (space bar) |
-| Feedback | 500 ms | Points or loss feedback |
-| Pause 3 | 2000–3000 ms | Inter-trial interval |
+### ⏱️ Complete Trial Timing Sequence
+
+Each trial follows a precise 7-phase sequence designed to create anticipation, measure response time, and provide clear feedback:
+
+#### **Phase 1: Cue Presentation**
+- **Duration**: `cue_ms = 250ms`
+- **What happens**: The cue image appears (e.g., treasure chest for high reward)
+- **Purpose**: Signals to participant what type of reward they can earn
+
+#### **Phase 2: Pause 1 (Pre-Target)**
+- **Duration**: `pause1_ms_range = [750, 1250]ms` (randomized)
+- **What happens**: Fixation cross (+) is shown
+- **Purpose**: Variable delay before target appears (anticipation period)
+
+#### **Phase 3: Target Presentation + Response**
+- **Duration**: `target_ms` (varies, starts at 500ms, adapts via staircase)
+- **What happens**: Target image appears, participant presses spacebar
+- **Purpose**: The actual task - quick response to earn reward
+
+#### **Phase 4: Pause 2 (Anticipation)**
+- **Duration**: `pause2_ms_range = [800, 1200]ms` (randomized)
+- **What happens**: Fixation cross (+) is shown
+- **Purpose**: Brief delay before feedback (builds anticipation)
+
+#### **Phase 5: Performance Feedback**
+- **Duration**: `feedback_ms = 1000ms`
+- **What happens**: Shows if response was fast enough (hit/miss image)
+- **Purpose**: Immediate feedback on performance
+
+#### **Phase 6: Monetary Feedback**
+- **Duration**: `feedback_ms = 1000ms`
+- **What happens**: Shows reward amount (+30 Cent, +3 Cent, +0 Cent) with image
+- **Purpose**: Shows how much money was earned
+
+#### **Phase 7: Pause 3 (Post-Feedback)**
+- **Duration**: `pause3_ms_range = [1500, 2000]ms` (randomized)
+- **What happens**: Fixation cross (+) is shown
+- **Purpose**: Processing time before next trial
+
+### 📊 Visual Timeline
+
+```
+Trial Start
+    ↓
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│    Cue      │  │   Pause 1   │  │   Target    │  │   Pause 2   │  │ Performance │  │  Monetary   │  │   Pause 3   │
+│   (250ms)   │  │(750-1250ms) │  │(500ms±)     │  │(800-1200ms) │  │  Feedback   │  │  Feedback   │  │(1500-2000ms)│
+│             │  │             │  │             │  │             │  │  (1000ms)   │  │  (1000ms)   │  │             │
+└─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘
+    ↓              ↓              ↓              ↓              ↓              ↓              ↓
+  Cue Image    Fixation (+)    Target Image   Fixation (+)   Hit/Miss      Reward Amount   Fixation (+)
+  (Treasure)                   (Press Space)                 Image          (+30 Cent)     Next Trial
+```
+
+### ⏱️ Total Trial Duration
+
+- **Minimum**: 250 + 750 + 500 + 800 + 1000 + 1000 + 1500 = **5800ms (5.8 seconds)**
+- **Maximum**: 250 + 1250 + 500 + 1200 + 1000 + 1000 + 2000 = **7200ms (7.2 seconds)**
+- **Average**: ~6.5 seconds per trial
+
+### 🎯 Key Timing Features
+
+1. **Variable Delays**: Pauses 1, 2, and 3 are randomized to prevent anticipation
+2. **Adaptive Target**: Target duration changes based on performance (staircase)
+3. **Dual Feedback**: Both performance (hit/miss) and monetary (cents earned) feedback
+4. **Anticipation**: Pause 2 creates anticipation before feedback
+5. **Processing Time**: Pause 3 allows time to process the feedback before next trial
+
+### 📋 Configuration Variables
+
+| Phase | YAML Variable | Default Value | Description |
+|-------|---------------|---------------|-------------|
+| Cue | `cue_ms` | 250ms | Cue image display duration |
+| Pause 1 | `pause1_ms_range` | [750, 1250]ms | Pre-target fixation (randomized) |
+| Target | `staircase.initial_ms` | 500ms | Initial target duration (adapts) |
+| Pause 2 | `pause2_ms_range` | [800, 1200]ms | Pre-feedback anticipation (randomized) |
+| Performance Feedback | `feedback_ms` | 1000ms | Hit/miss feedback duration |
+| Monetary Feedback | `feedback_ms` | 1000ms | Reward amount feedback duration |
+| Pause 3 | `pause3_ms_range` | [1500, 2000]ms | Post-feedback processing (randomized) |
 
 ---
 

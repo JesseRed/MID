@@ -1,3 +1,0 @@
-participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
-iutzf,001,20251008-142055,1,1,NEUTRAL,0,0,500,500,300,1,1128,897,2047,250,1000,0,0,space,global,
-iutzf,001,20251008-142102,1,2,WIN_HIGH,1,5,500,450,300,1,756,1068,2750,250,1000,60,60,space,global,100.0

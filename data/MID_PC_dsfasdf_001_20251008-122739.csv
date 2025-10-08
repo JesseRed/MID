@@ -1,3 +1,0 @@
-participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
-dsfasdf,001,20251008-122751,1,1,AVOID_LOW,-1,1,500,500,,0,931,996,2679,250,1000,0,0,,global,
-dsfasdf,001,20251008-122758,1,2,AVOID_HIGH,-1,5,500,500,,0,966,1176,2347,250,1000,0,0,,global,0.0

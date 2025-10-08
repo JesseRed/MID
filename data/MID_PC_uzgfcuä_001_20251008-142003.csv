@@ -1,2 +1,0 @@
-participant,session,timestamp,block,trial_index,condition,valence,magnitude,target_ms_pre,target_ms_final,rt_ms,hit,pause1_ms,pause2_ms,pause3_ms,cue_ms,feedback_ms,points_change,points_total,key_pressed,rscore_scope,rscore_value
-uzgfcuä,001,20251008-142015,1,1,WIN_HIGH,1,5,500,500,,0,1244,1079,2962,250,1000,0,0,,global,

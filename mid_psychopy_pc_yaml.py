@@ -109,7 +109,7 @@ def main():
     cue_images = {}
     for label, image_path in cond_cue_image.items():
         if os.path.exists(image_path):
-            cue_images[label] = visual.ImageStim(win, image=image_path)
+            cue_images[label] = visual.ImageStim(win, image=image_path, size=0.6)
         else:
             print(f"Warning: Cue image not found: {image_path}")
             # Fallback to text
@@ -118,7 +118,7 @@ def main():
     # Load target image
     target_image_path = cfg['visuals']['target_image']
     if os.path.exists(target_image_path):
-        target_stim = visual.ImageStim(win, image=target_image_path)
+        target_stim = visual.ImageStim(win, image=target_image_path, size=0.6)
     else:
         print(f"Warning: Target image not found: {target_image_path}")
         # Fallback to text
@@ -128,17 +128,36 @@ def main():
     monetary_feedback_images = {}
     for label, image_path in cond_monetary_feedback.items():
         if os.path.exists(image_path):
-            monetary_feedback_images[label] = visual.ImageStim(win, image=image_path)
+            # All images use consistent size (0.6) for visual uniformity
+            monetary_feedback_images[label] = visual.ImageStim(win, image=image_path, size=0.6)
         else:
             print(f"Warning: Monetary feedback image not found: {image_path}")
             # Fallback to text
             monetary_feedback_images[label] = visual.TextStim(win, text="?", color=cfg['win']['text_color'], height=0.12, font=cfg['win']['font'])
     
+    # Create monetary gain text stimuli (displayed in upper third)
+    monetary_gain_text = {}
+    for label, meta in cond_meta.items():
+        points = meta["points_hit"]
+        if points > 0:
+            gain_text = f"+{points} Cent"
+        else:
+            gain_text = "+0 Cent"
+        monetary_gain_text[label] = visual.TextStim(
+            win, 
+            text=gain_text, 
+            color='white',      # White text for visibility
+            height=0.1,         # Even larger text for better visibility
+            font=cfg['win']['font'],
+            pos=(0, 0.4),       # Position higher to clear the bigger image
+            bold=True           # Make text bold for better visibility
+        )
+    
     # Load performance feedback images
     performance_feedback_images = {}
     for key, image_path in cfg['visuals']['performance_feedback_images'].items():
         if os.path.exists(image_path):
-            performance_feedback_images[key] = visual.ImageStim(win, image=image_path)
+            performance_feedback_images[key] = visual.ImageStim(win, image=image_path, size=0.6)
         else:
             print(f"Warning: Performance feedback image not found: {image_path}")
             # Fallback to text
@@ -320,24 +339,25 @@ def main():
         # Target + response
         event.clearEvents()
         rt = None; keyname = None
+        clock = core.Clock()  # Start timing BEFORE flip
         target_stim.draw(); win.flip()
-        clock = core.Clock()
         tgt_sec = target_ms / 1000.0
         
         while clock.getTime() < tgt_sec:
-            check_escape()
-            # Check for key press
-            keys = event.getKeys(timeStamped=clock)
-            if keys:
-                for key, timestamp in keys:
-                    keyname = key
-                    rt_sec = timestamp
-                    if keyname in cfg['task']['resp_keys'] or keyname == 'space':
+            # Check for ALL keys including escape
+            all_keys = event.getKeys()
+            if all_keys:
+                for key in all_keys:
+                    if key == 'escape':
+                        check_escape()  # Handle escape
+                    elif key == 'space' or key in cfg['task']['resp_keys']:
+                        keyname = key
+                        rt_sec = clock.getTime()
                         rt = int(rt_sec * 1000.0)
                         break
                 if rt is not None:
                     break
-            core.wait(0.001)
+            core.wait(0.0001)  # Very short wait for better responsiveness
 
         # Target off
         fixation.draw(); win.flip()
@@ -358,10 +378,14 @@ def main():
         # If miss (negative performance), always show 0 points feedback regardless of condition
         if not hit:
             # Use the neutral (0 points) monetary feedback image for misses
-            monetary_feedback_images["NEUTRAL"].draw(); win.flip(); core.wait(fb_ms / 1000.0); check_escape()
+            monetary_feedback_images["NEUTRAL"].draw()
+            monetary_gain_text["NEUTRAL"].draw()  # Show "+0 Cent" text ON TOP
+            win.flip(); core.wait(fb_ms / 1000.0); check_escape()
         else:
             # Show condition-specific monetary feedback for hits
-            monetary_feedback_images[cond_label].draw(); win.flip(); core.wait(fb_ms / 1000.0); check_escape()
+            monetary_feedback_images[cond_label].draw()
+            monetary_gain_text[cond_label].draw()  # Show gain text ON TOP (e.g., "+30 Cent")
+            win.flip(); core.wait(fb_ms / 1000.0); check_escape()
 
         # Pause3 (post-feedback)
         fixation.draw(); win.flip(); core.wait(pause3_ms / 1000.0); check_escape()

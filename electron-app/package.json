@@ -1,0 +1,62 @@
+{
+  "name": "mid-task-electron",
+  "version": "1.0.0",
+  "description": "MID Task - Monetary Incentive Delay Experiment (Electron Desktop App)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --windows --x64",
+    "build-all": "electron-builder --windows --x64 --ia32"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.mid.task",
+    "productName": "MID Task",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "mid_web_electron.html",
+      "mid_web_electron.js",
+      "../mid_config.yml",
+      "../text_content.yml",
+      "../images/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../mid_config.yml",
+        "to": "mid_config.yml"
+      },
+      {
+        "from": "../text_content.yml",
+        "to": "text_content.yml"
+      },
+      {
+        "from": "../images",
+        "to": "images"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
+

@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     showSaveDialog: (defaultFilename) => ipcRenderer.invoke('show-save-dialog', defaultFilename),
     writeFile: (filePath, content) => ipcRenderer.invoke('write-file', filePath, content),
     quitApp: () => ipcRenderer.invoke('quit-app'),
+    getImageUrl: (imagePath) => ipcRenderer.invoke('get-image-url', imagePath),
     isElectron: true
 });
 

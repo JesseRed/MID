@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --windows --x64",
+    "build-portable": "electron-builder --win.target=portable --x64",
     "build-all": "electron-builder --windows --x64 --ia32"
   },
   "author": "",
@@ -47,6 +48,10 @@
       "target": [
         {
           "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
           "arch": ["x64"]
         }
       ]

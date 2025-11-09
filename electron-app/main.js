@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
 
 let mainWindow;
 
@@ -53,6 +54,13 @@ function getResourcePath(filename) {
         // In development, go up one level to access the parent directory
         return path.join(__dirname, '..', filename);
     }
+}
+
+// Get file URL for images (works both in dev and production)
+function getImageFileUrl(imagePath) {
+    const fullPath = getResourcePath(imagePath);
+    // Use Node's pathToFileURL for proper file:// URL conversion (handles all platforms)
+    return pathToFileURL(fullPath).href;
 }
 
 // IPC Handlers for file operations
@@ -118,5 +126,23 @@ ipcMain.handle('write-file', async (event, filePath, content) => {
 
 ipcMain.handle('quit-app', () => {
     app.quit();
+});
+
+// IPC handler to get image file URL
+ipcMain.handle('get-image-url', async (event, imagePath) => {
+    try {
+        const fileUrl = getImageFileUrl(imagePath);
+        // Verify file exists
+        const fullPath = getResourcePath(imagePath);
+        if (fs.existsSync(fullPath)) {
+            return { success: true, url: fileUrl };
+        } else {
+            console.error('Image not found:', fullPath);
+            return { success: false, error: 'Image not found: ' + imagePath };
+        }
+    } catch (error) {
+        console.error('Error getting image URL:', error);
+        return { success: false, error: error.message };
+    }
 });
 

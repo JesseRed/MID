@@ -71,6 +71,26 @@ The installed app doesn't need Node.js on the target PC!
 
 ---
 
+## 🚫 Running Without Admin Rights
+
+**Don't have admin rights? No problem!**
+
+### Option 1: Portable Executable (Easiest!)
+1. **Double-click: `BUILD_PORTABLE.bat`** (builds once)
+2. Find the `.exe` file in `dist\` folder
+3. **Double-click the `.exe`** - runs without npm or Node.js!
+4. No installation, no admin rights needed!
+
+### Option 2: Portable Node.js
+1. Download portable Node.js from https://nodejs.org/dist/
+2. Extract to `%USERPROFILE%\nodejs-portable`
+3. Use `BUILD_PORTABLE.bat` and `START_PORTABLE.bat`
+4. No admin rights needed!
+
+**See `NO_ADMIN_RIGHTS_GUIDE.md` for detailed instructions!**
+
+---
+
 ## 📁 Where is Everything?
 
 ```
@@ -79,7 +99,9 @@ MID/
 │   ├── INSTALL.bat        ← Run this FIRST
 │   ├── START.bat          ← Run this to start app
 │   ├── BUILD.bat          ← Build Windows installer
-│   └── dist/              ← Installer appears here after BUILD
+│   ├── BUILD_PORTABLE.bat ← Build portable .exe (no admin!)
+│   ├── START_PORTABLE.bat ← Start with portable Node.js
+│   └── dist/              ← Installer/executable appears here
 │
 ├── mid_config.yml         ← Edit experiment settings
 ├── text_content.yml       ← Edit instructions

@@ -286,30 +286,55 @@ function showFixation(durationMs) {
     });
 }
 
-function showImage(imagePath, durationMs) {
-    return new Promise((resolve) => {
+async function showImage(imagePath, durationMs) {
+    return new Promise(async (resolve) => {
         const display = document.getElementById('display');
-        display.innerHTML = `<img src="${imagePath}" class="image-stim">`;
+        // Get proper file URL for Electron
+        const imageResult = await window.electronAPI.getImageUrl(imagePath);
+        if (imageResult.success) {
+            display.innerHTML = `<img src="${imageResult.url}" class="image-stim" onerror="this.style.display='none'; console.error('Failed to load image: ${imagePath}');">`;
+        } else {
+            console.error('Error loading image:', imageResult.error);
+            display.innerHTML = `<div class="text-screen">Image not found: ${imagePath}</div>`;
+        }
         setTimeout(resolve, durationMs);
     });
 }
 
-function showImageWithText(imagePath, text, durationMs) {
-    return new Promise((resolve) => {
+async function showImageWithText(imagePath, text, durationMs) {
+    return new Promise(async (resolve) => {
         const display = document.getElementById('display');
-        display.innerHTML = `
-            <div class="monetary-text">${text}</div>
-            <img src="${imagePath}" class="image-stim">
-        `;
+        // Get proper file URL for Electron
+        const imageResult = await window.electronAPI.getImageUrl(imagePath);
+        if (imageResult.success) {
+            display.innerHTML = `
+                <div class="monetary-text">${text}</div>
+                <img src="${imageResult.url}" class="image-stim" onerror="this.style.display='none'; console.error('Failed to load image: ${imagePath}');">
+            `;
+        } else {
+            console.error('Error loading image:', imageResult.error);
+            display.innerHTML = `
+                <div class="monetary-text">${text}</div>
+                <div class="text-screen">Image not found: ${imagePath}</div>
+            `;
+        }
         setTimeout(resolve, durationMs);
     });
 }
 
-function showTargetAndGetResponse(targetMs) {
-    return new Promise((resolve) => {
+async function showTargetAndGetResponse(targetMs) {
+    return new Promise(async (resolve) => {
         const display = document.getElementById('display');
         const targetImage = config.visuals.target_image;
-        display.innerHTML = `<img src="${targetImage}" class="image-stim">`;
+        
+        // Get proper file URL for Electron
+        const imageResult = await window.electronAPI.getImageUrl(targetImage);
+        if (imageResult.success) {
+            display.innerHTML = `<img src="${imageResult.url}" class="image-stim" onerror="this.style.display='none'; console.error('Failed to load image: ${targetImage}');">`;
+        } else {
+            console.error('Error loading target image:', imageResult.error);
+            display.innerHTML = `<div class="text-screen">Target image not found: ${targetImage}</div>`;
+        }
         
         currentKeys.clear();
         const startTime = performance.now();

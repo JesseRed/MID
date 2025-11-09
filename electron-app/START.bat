@@ -1,10 +1,100 @@
 @echo off
+setlocal enabledelayedexpansion
 echo ========================================
 echo MID Task - Starting Application
 echo ========================================
 echo.
 
-call npm start
+REM Check if npm is available (try system PATH first)
+set "NPM_CMD=npm"
+set NPM_FOUND=0
+where npm >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    set NPM_FOUND=1
+    echo Using system npm
+) else (
+    REM Try common portable Node.js locations (check user folder first)
+    if exist "%USERPROFILE%\nodejs-portable\npm.cmd" (
+        set "NPM_CMD=%USERPROFILE%\nodejs-portable\npm.cmd"
+        set "NODEJS_DIR=%USERPROFILE%\nodejs-portable"
+        set NPM_FOUND=1
+        echo Found portable Node.js in user folder: %USERPROFILE%\nodejs-portable
+        REM Add nodejs-portable to PATH so electron can find node.exe
+        set "PATH=!NODEJS_DIR!;%PATH%"
+    ) else if exist "..\nodejs-portable\npm.cmd" (
+        set "NPM_CMD=..\nodejs-portable\npm.cmd"
+        REM Get absolute path for PATH
+        pushd "..\nodejs-portable" 2>nul
+        set "NODEJS_DIR=%CD%"
+        popd
+        set NPM_FOUND=1
+        echo Found portable Node.js in parent folder
+        REM Add nodejs-portable to PATH so electron can find node.exe
+        set "PATH=!NODEJS_DIR!;%PATH%"
+    ) else if exist "nodejs-portable\npm.cmd" (
+        set "NPM_CMD=nodejs-portable\npm.cmd"
+        REM Get absolute path for PATH
+        pushd "nodejs-portable" 2>nul
+        set "NODEJS_DIR=%CD%"
+        popd
+        set NPM_FOUND=1
+        echo Found portable Node.js in current folder
+        REM Add nodejs-portable to PATH so electron can find node.exe
+        set "PATH=!NODEJS_DIR!;%PATH%"
+    )
+)
+
+if !NPM_FOUND! EQU 0 (
+    echo ERROR: npm is not found.
+    echo.
+    echo OPTION 1: Install Node.js normally (requires admin rights once)
+    echo   - Download from https://nodejs.org/
+    echo   - Install and restart terminal
+    echo.
+    echo OPTION 2: Use portable Node.js (NO admin rights needed!)
+    echo   1. Download portable Node.js from:
+    echo      https://nodejs.org/dist/v20.11.0/node-v20.11.0-win-x64.zip
+    echo      (or latest LTS version)
+    echo   2. Extract to: %USERPROFILE%\nodejs-portable
+    echo   3. Run INSTALL.bat first, then START.bat
+    echo.
+    echo OPTION 3: Add Node.js to user PATH (NO admin rights needed!)
+    echo   1. Press Win+R, type: sysdm.cpl
+    echo   2. Advanced tab ^> Environment Variables
+    echo   3. Under "User variables", edit "Path"
+    echo   4. Add your Node.js folder
+    echo   5. Restart command prompt
+    echo.
+    pause
+    exit /b 1
+)
+
+REM Verify npm actually works
+call !NPM_CMD! --version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: npm was found but doesn't work properly.
+    echo Path: !NPM_CMD!
+    echo.
+    echo Please check that Node.js is properly extracted and npm.cmd is executable.
+    pause
+    exit /b 1
+)
+
+REM Check if node_modules exists (dependencies installed)
+if not exist "node_modules" (
+    echo WARNING: Dependencies not found!
+    echo.
+    echo It looks like you haven't installed the dependencies yet.
+    echo Please run INSTALL.bat first to install required packages.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo Starting Electron application...
+echo.
+
+call !NPM_CMD! start
 
 pause
 

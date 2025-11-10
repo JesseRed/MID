@@ -23,39 +23,45 @@ if exist "dist\MID Task*.exe" (
 
 REM If no portable exe, try to use npm
 set "NPM_CMD=npm"
-where npm >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    REM Try portable Node.js locations (check user folder first)
-    if exist "%USERPROFILE%\nodejs-portable\npm.cmd" (
-        set "NPM_CMD=%USERPROFILE%\nodejs-portable\npm.cmd"
-        set "NODEJS_DIR=%USERPROFILE%\nodejs-portable"
-        REM Add nodejs-portable to PATH so electron can find node.exe
-        set "PATH=!NODEJS_DIR!;%PATH%"
-    ) else if exist "..\nodejs-portable\npm.cmd" (
-        set "NPM_CMD=..\nodejs-portable\npm.cmd"
-        REM Get absolute path for PATH
-        pushd "..\nodejs-portable" 2>nul
-        set "NODEJS_DIR=%CD%"
-        popd
-        REM Add nodejs-portable to PATH so electron can find node.exe
-        set "PATH=!NODEJS_DIR!;%PATH%"
-    ) else if exist "nodejs-portable\npm.cmd" (
-        set "NPM_CMD=nodejs-portable\npm.cmd"
-        REM Get absolute path for PATH
-        pushd "nodejs-portable" 2>nul
-        set "NODEJS_DIR=%CD%"
-        popd
-        REM Add nodejs-portable to PATH so electron can find node.exe
-        set "PATH=!NODEJS_DIR!;%PATH%"
-    ) else (
-        echo ERROR: No portable executable found and npm is not available.
-        echo.
-        echo Please either:
-        echo 1. Build a portable executable using BUILD_PORTABLE.bat
-        echo 2. Install Node.js and use START.bat instead
-        echo.
-        pause
-        exit /b 1
+
+REM First priority: Check for bundled nodejs-portable in current folder
+if exist "nodejs-portable\npm.cmd" (
+    set "NPM_CMD=nodejs-portable\npm.cmd"
+    REM Get absolute path for PATH using delayed expansion
+    pushd "nodejs-portable" 2>nul
+    set "NODEJS_DIR=!CD!"
+    popd
+    REM Add nodejs-portable to PATH so electron can find node.exe
+    set "PATH=!NODEJS_DIR!;%PATH%"
+    echo Using BUNDLED portable Node.js
+) else (
+    REM Try system PATH
+    where npm >nul 2>&1
+    if %ERRORLEVEL% NEQ 0 (
+        REM Try other portable Node.js locations
+        if exist "%USERPROFILE%\nodejs-portable\npm.cmd" (
+            set "NPM_CMD=%USERPROFILE%\nodejs-portable\npm.cmd"
+            set "NODEJS_DIR=%USERPROFILE%\nodejs-portable"
+            REM Add nodejs-portable to PATH so electron can find node.exe
+            set "PATH=!NODEJS_DIR!;%PATH%"
+        ) else if exist "..\nodejs-portable\npm.cmd" (
+            set "NPM_CMD=..\nodejs-portable\npm.cmd"
+            REM Get absolute path for PATH using delayed expansion
+            pushd "..\nodejs-portable" 2>nul
+            set "NODEJS_DIR=!CD!"
+            popd
+            REM Add nodejs-portable to PATH so electron can find node.exe
+            set "PATH=!NODEJS_DIR!;%PATH%"
+        ) else (
+            echo ERROR: No portable executable found and npm is not available.
+            echo.
+            echo Please either:
+            echo 1. Build a portable executable using BUILD_PORTABLE.bat
+            echo 2. Install Node.js and use START.bat instead
+            echo.
+            pause
+            exit /b 1
+        )
     )
 )
 

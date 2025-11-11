@@ -322,9 +322,18 @@ function showTargetAndGetResponse(targetMs) {
             }
             
             if (!responded && currentKeys.size > 0) {
-                responded = true;
-                rt = Math.round(elapsed);
-                keyname = Array.from(currentKeys)[0];
+                // Get valid response keys from config
+                const validKeys = config.task.resp_keys || ['space'];
+                
+                // Check if any pressed key is valid
+                for (const key of currentKeys) {
+                    if (validKeys.includes(key) || key === ' ' && validKeys.includes('space')) {
+                        responded = true;
+                        rt = Math.round(elapsed);
+                        keyname = key === ' ' ? 'space' : key;
+                        break;
+                    }
+                }
             }
             
             requestAnimationFrame(checkResponse);

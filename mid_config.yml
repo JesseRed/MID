@@ -38,7 +38,7 @@ rscore:
 task:
   n_blocks: 2
   trials_per_block: 36
-  resp_keys: ["space"]
+  resp_keys: ["space", "j", "g", "f", "h"]
   show_cumulative_points: true
   practice_trials: 0
 
